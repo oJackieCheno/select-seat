@@ -1,0 +1,236 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+    <title>Select Multiple Consecutive Seats</title>
+    <script type="text/javascript">
+        var seats = [
+            [false, true, false, true, true, true, false, true, false],
+            [false, true, false, false, true, false, true, true, true],
+            [true, true, true, true, true, true, false, true, false],
+            [true, true, true, false, true, false, false, true, false]
+        ];
+        /*二维数组：数组元素换为多个子数组，这些子数组形成第二维，制造出具有行和列的数据表，二维数组让你可以存储表格数据。
+        其中每个子数组代表每一行，有多少子数组就有多少行，而子数组中的数据代表列，子数组中有多少数据，就有多少列*/
+
+        /*初始化一个数组，也可以通过另一种方式初始化：var seats = new Array(new Array(9), new Array(9), new Array(9), new Array(9)); 
+        seats[2][3] = false; 此时即吧false存储到数组seats的第3行第4列的值中*/
+
+        /*二维数组中每个元素包括两个（key）键，要键访问值，需要知道值得行与列，比如：第三行第四列：alert(Array[2][3])*/
+
+        /*用循环处理一个多维数组，对每一维都需要一个嵌套循环，所以二维数组需要两层循环，外层循环处理数组数据每一行，内层循环处理每行中的每一列*/
+
+        function setSeat(seatNumber, status, description) {
+            document.getElementById("seats" + seatNumber).src = "images/seat_" + status + ".png";
+            document.getElementById("seats" + seatNumber).alt = description;
+        }
+        /*加入setSeat function，简化下面的一系列document.getElementById().src和.alt语句，所以function一大功能是简化具有相似代码的一系列语句，
+        找出这些语句中的变量作为函数的自变量(逗号隔开)，把重复代码写进函数，借用调用函数取代大量重复代码*/
+
+        var selSeat = -1;
+        /*无限循环出现在当判定条件无法出现false的情况，如果突然发现脚本停下没有动作，就表示你遇到了无限循环*/
+        function initSeats() {
+            // Initialize the appearance of all seats
+
+            //for循环适合重复动作已知次数，重复运行程序代码特定次数，如果不知道循环所需的次数，很难设置for循环。此时我们需要while循环语句：循环重复代码，直到特定条件句为false
+            for (var i = 0; i < seats.length; i++) { //外层循环处理排数，在每轮循环结束，i值加1
+                for (var j = 0; j < seats[i].length; j++) { //内层循环处理每排数据的每一列，seats[i].length代表子数组的长度
+                    if (seats[i][j] == true) { /*把循环计数器i当作数组的索引，从而可以利用循环处理数组中的数据*/
+                        setSeat(i * seats[i].length + j, "avail", "Seat available")
+
+                    } else {
+                        setSeat(i * seats[i].length + j, "unavail", "Seat unavailable")
+
+                    }
+                }
+            }
+        }
+
+        function showSeatStatus(seatNum) {
+            alert("This seat is " + getSeatStatus(seatNum) + ".")
+                /*这个function用于当用户点击座椅时提示这个座位的状态,seatNum是自变量，其值传承于座椅图片那块onclick="showSeatStatus(5)括号中的数字"*/
+        }
+
+        function getSeatStatus(seatNum) {
+            if (selSeat > -1 && (selSeat == seatNum || (selSeat + 1) == seatNum || (selSeat + 2) == seatNum)) {
+                /*selSeat为-1表示未选座位，selSeat>-1表示已选座位。
+                当用户接受座位，并且点击的座椅图片是他选择的座椅或者旁边连续的两个座椅的时候，判定为true，返回值yours，
+                否则判定为false，因为用户可能还没有选座位，或者点击的不是自己接受的座椅图片，此时当然不能返回yours*/
+                return "Yours"
+                    /*return语句：能放在函数的任何地方，函数遇到return立即结束，不再执行后续代码，所以return不仅返回一个值，还负责结束函数，return返回的值返回到调用函数的代码
+                    对于return结束函数的作用，可以用来控制函数流程，return后可以不跟值，单纯用于结束函数*/
+            } else if (seats[Math.floor(seatNum / seats[0].length)][seatNum % seats[0].length] == true) {
+                /*Math.floor作用：Round a number downward to its nearest integer，即舍去小数取整数。Math.floor(seatNum / seats[0].length)用于计算座位的行，
+                %作用则是做除法取余数。seatNum % seats[0].length用于计算座位的列。
+                有了行和列两个key，就能知道二维数组seats[i][j]第i行j列的值是true还是false,true返回available，false返回unavailable*/
+                return "Available"
+            } else {
+                return "Unavailable"
+            }
+        }
+
+        function findSeat() {
+            // If seats are already selected, reinitialize all seats to clear them
+            if (selSeat >= 0) {
+                selSeat = -1;
+                initSeats();
+                /*如果没有这个function，当我们第一次选了座位2之后，继续点find seat，此时如果选择座位4，那么，会看到作为2和4都呈现被选中的状态。
+                有了这个function，选择座位4之后，座位2会回到initSeats function初始化座位所呈现的状态*/
+            }
+
+            var i = 0;
+            finished = true;
+
+
+            while (i < seats.length && finished) {
+                for (var j = 0; j < seats[i].length; j++) {
+                    /*while循环语句：循环重复代码，直到特定条件句为false。判定为true时进行下一轮循环，否则跳出。
+                    因为while循环没有更新循环条件的内置代码，所以在循环执行步骤，我们必须添加影响测试条件的代码，否则，可能创建无限循环*/
+
+                    /*for循环可以写成while的形式： 比如 for (var i =0; i < 10; i++) {                var i =0;
+                                                          alert(i)                        ==       while (i < 10) {
+                                                        }                                          alert(i); 
+                                                                                                   i++;
+                                                                                                   }*/
+
+
+                    if (seats[i][j] && seats[i][j + 1] && seats[i][j + 2] == true) {
+                        /*boolean逻辑运算符：只用在boolean数据上，即只与true/false合用,比如：&&，||，！
+                        boolean比较运算符则是先比较两个值，然后产生boolean结果，比如：！=， >=.
+                        这里利用boolean逻辑运算，检查连续的三张椅子是否都为空。
+                        我们也可以利用嵌套的if语句实现：if (seats[i] == true) {
+                                                         if (seats[i+1] == true) {
+                                                            if (seats[i+2] == true) {
+
+                                                            }
+                                                        }
+                                                    }*/
+                        setSeat(i * seats[i].length + j, "select", "Your seat");
+                        setSeat(i * seats[i].length + j + 1, "select", "Your seat");
+                        setSeat(i * seats[i].length + j + 2, "select", "Your seat");
+                        var accept = confirm("Seat " + (j + 1) + " through " + (j + 3) + " in Row " + (i + 1) + " are available. Accept?")
+                            /* A confirm box is often used if you want the user to verify or accept something.
+                            When a confirm box pops up, the user will have to click either "OK" or "Cancel" to proceed.
+                            If the user clicks "OK", the box returns true. If the user clicks "Cancel", the box returns false.*/
+                        if (!accept) {
+                            setSeat(i * seats[i].length + j, "avail", "Seat available")
+                            setSeat(i * seats[i].length + j + 1, "avail", "Seat available")
+                            setSeat(i * seats[i].length + j + 2, "avail", "Seat available")
+
+                            if (i >= (seats.length - 1)) {
+                                alert("There is no more suitable seats for you!")
+                            }
+                            /*当用户拒绝所有合适座位之后，此时在这里i = 3, 因为还没有执行末尾的i++语句，seats.length = 4；所以判定条件为(i >= (seats.length - 1))。
+                            判定成立，就会弹出这个alert，并且会跳出while循环*/
+
+                            /*这个if句只能放在这里，不能放到for循环之外。因为确认选座之后，会执行for循环外while循环内语句，也会同样出现alert，不合适*/
+
+                        } else {
+                            selSeat = i * seats[i].length + j;
+                            /*同意座位之后，把selSeat设置为i * seats[i].length + j，是为了下一次onclick的时候，能够运行initSeats function.
+                            为什么要设置为i * seats[i].length + j，比如第三排第8列，i=2，j=7，座位编号是25=2*9+7，*/
+                            finished = false;
+                            /*这里的finished改为false，是为了当用户同意选座，执行下面break跳出for循环之后，把while循环的判定该为false，从而跳出while循环*/
+
+                            /*finished = false这语句不能放到for循环之外，如果这样，比如：当i=0，执行for循环，用户一直拒绝，j++，for循环持续，
+                            一直到j>seats[i].length的时候会跳出for循环，此时就会依次执行for循环之后while循环之内的语句：finished = false， i++，
+                            从而导致while判定为false跳出while循环*/
+                            break;
+                            /*break专门为结束一段代码而设计，可以立刻跳出循环，无视判定条件，这轮循环其后的代码也不会执行。
+                            在这里break作用：当用户同意这个座位，则跳出for循环，不然会一直提示哪些座位是空的直到j>seats[i].length。
+                            也可以使用改变判定数字i的方法，比如：j = seats[i].length + 1，此时即会判定为false跳出循环*/
+
+                            /*与break相似的有continue语句，但是continue是跳出当前这一轮循环，但不会完全脱离循环，而是强迫进入下一个循环，*/
+                        }
+                    }
+                }
+
+                i++; // Increment the loop counter
+
+            }
+
+
+        }
+
+        window.onload = function() { //在这里，onload事件处理器就是一个函数自变量
+            initSeats();
+            for (var i = 0; i < 36; i++) { //访问每个座椅图像的onclick特性，以设定onclick事件处理器
+                document.getElementById("seats" + i).onclick = function() {
+                    showSeatStatus(i) //函数字面量内调用shoeSeatStatus()函数，自变量才可以传进去
+                }
+            }
+            document.getElementById("findSeats").onclick = findSeat;
+        };
+        /*函数其实是变量，函数名称看作变量名称，函数主体看作值，一般函数创建方式是：function findSeat(argument) {主体}，我们也可以这样：
+        var findSeat = function (argument) {主体}；这种表达方式又称函数字面量：当函数主题单独出现，没有函数名称时，称为函数字面量。
+        函数名称findSeat即为变量名称，函数主体则是变量值，这意味着函数也可以当作变量处理，比如：
+        var newVariable = findSeat，此时，我们指派findSeat()函数给了变量newVariable，我们就可以通过新变量newVariable访问函数主体，*/
+
+        /*函数引用与函数调用：与函数名称后面是否有括号()有关。函数引用后面没有(),函数调用后面必定有括号，很多时候还附有自变量
+        例： var newVariable = findSeat——对newVariable指派函数引用，  newVariable(5)——运行newVariable()函数，与运行findSeat()相同，此即调用*/
+
+        /*函数与一般变量的差别：函数作为变量可以直接执行，只要在后面加上括号即可()*/
+
+        /*使用函数引用联结事件：我们可以在js代码中指派函数引用作为事件处理器，就不用冒着改变html代码的风险，使用html属性来联结回调函数与事件的这种方式，
+        比如在body标签里面加上onload="initSeat()"就是利用html属性联结回调函数（回掉函数被浏览器调用，以响应发生在脚本外的事件）initSeat()与事件onload的方式。
+        这种方式会在html中混入js，导致后期维护不方便。
+        函数引用可以解决这个问题：window.onload = initSeat; 后面没有括号，是函数引用，即在js代码中设定事件处理器，包括指派函数引用给某个对象的事件，这样就把html与js分离开来。
+        如果需要传入自变量，比如showSeatStatus()函数，则我们需要函数字面量的帮助：使用函数字面量作为函数引用，而后从函数字面量内调用shoeSeatStatus()函数,
+        比如：document.getElementById("seats5").onclick = function() { shoeSeatStatus(5); }. 函数字面量function (evt) { }被指派给onclick事件，
+        作为函数引用，包裹着对showSeatStatus()函数的调用，允许自变量传入。 函数字面量又被称为匿名函数，其中evt是事件对象，onclick事件处理器不需要事件对象，所以忽略*/
+
+        /*onload事件处理器是个初始化所有事件的绝佳地方: 网页上所有其他事件都必须要于onload事件处理器中做联结，即把事件联结到对应引用函数，
+        需要传入自变量的，则利用函数字面量做联结，而onload事件专用代码则在onload事件处理器中运行。overall，onload事件处理器变成了事件初始化函数，
+        不仅执行一般网页初始任务，也把其他事件处理器回调函数联结上应用程序，如果不放到onload事件处理器，而放在<script>标签后，
+        网页内容在载入<script>时尚未载入（<script>部分在<body>上面），所有调用都会失效，事件处理器也不会得到联结。而onload处理器则保证网页一定已经载入，
+        因为onload作用是Execute a JavaScript immediately after a page has been loaded*/
+
+        /*函数字面量：没有名称的函数主体，很适合在需要快速偶发回调函数的情况。通常用于不仅需要函数引用，也需要传入自变量的情况*/
+    </script>
+</head>
+
+<body>
+    <div style="text-align:center; margin-top: 100px">
+        <img id="seats0" src="_" alt=" " />
+        <img id="seats1" src=" " alt=" " />
+        <img id="seats2" src=" " alt=" " />
+        <img id="seats3" src=" " alt=" " />
+        <img id="seats4" src=" " alt=" " />
+        <img id="seats5" src=" " alt=" " />
+        <img id="seats6" src=" " alt=" " />
+        <img id="seats7" src=" " alt=" " />
+        <img id="seats8" src=" " alt=" " /><br/>
+        <img id="seats9" src=" " alt=" " />
+        <img id="seats10" src=" " alt=" " />
+        <img id="seats11" src=" " alt=" " />
+        <img id="seats12" src=" " alt=" " />
+        <img id="seats13" src=" " alt=" " />
+        <img id="seats14" src=" " alt=" " />
+        <img id="seats15" src=" " alt=" " />
+        <img id="seats16" src=" " alt=" " />
+        <img id="seats17" src=" " alt=" " /><br/>
+        <img id="seats18" src=" " alt=" " />
+        <img id="seats19" src=" " alt=" " />
+        <img id="seats20" src=" " alt=" " />
+        <img id="seats21" src=" " alt=" " />
+        <img id="seats22" src=" " alt=" " />
+        <img id="seats23" src=" " alt=" " />
+        <img id="seats24" src=" " alt=" " />
+        <img id="seats25" src=" " alt=" " />
+        <img id="seats26" src=" " alt=" " /><br/>
+        <img id="seats27" src=" " alt=" " />
+        <img id="seats28" src=" " alt=" " />
+        <img id="seats29" src=" " alt=" " />
+        <img id="seats30" src=" " alt=" " />
+        <img id="seats31" src=" " alt=" " />
+        <img id="seats32" src=" " alt=" " />
+        <img id="seats33" src=" " alt=" " />
+        <img id="seats34" src=" " alt=" " />
+        <img id="seats35" src=" " alt=" " /><br/>
+        <input type="button" id="findSeats" value="Find Seat" />
+    </div>
+</body>
+
+</html>

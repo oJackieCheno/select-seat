@@ -1,0 +1,96 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+   "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en">
+
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1" />
+    <title>Select Multiple Consecutive Seats</title>
+    <script type="text/javascript">
+        var seats = [false, true, false, true, true, true, false, true, false];
+        /*初始化一个数组，也可以通过另一种方式初始化：var seats = new Array(); seats[0] = false; 此时即吧false存储到数组seats的第一个值中*/
+        /*数组：可用于存储多个数据于一个变量中，数组中每个元素由两块信息组成：值和具有唯一性的（key）键，以键访问值，键通常从0开始，数字编号键称为索引，是一种特殊的键*/
+        var selSeat = -1;
+        /*无限循环出现在当判定条件无法出现false的情况，如果突然发现脚本停下没有动作，就表示你遇到了无限循环*/
+        function initSeats() {
+            // Initialize the appearance of all seats
+            //for循环适合重复动作已知次数，重复运行程序代码特定次数，如果不知道循环所需的次数，很难设置for循环。此时我们需要while循环语句：循环重复代码，直到特定条件句为false
+            for (var i = 0; i < seats.length; i++) { //在每轮循环结束，i值加1
+                if (seats[i] == true) { /*把循环计数器i当作数组的索引，从而可以利用循环处理数组中的数据*/
+                    document.getElementById("seats" + i).src = "images/seat_avail.png"
+                    document.getElementById("seats" + i).alt = "Seat available"
+                } else {
+                    document.getElementById("seats" + i).src = "images/seat_unavail.png";
+                    document.getElementById("seats" + i).alt = "Seat unavailable"
+                }
+            }
+        }
+
+        function findSeat() {
+            // If seats are already selected, reinitialize all seats to clear them
+            if (selSeat >= 0) {
+                selSeat = -1;
+                initSeats();
+                /*如果没有这个function，当我们第一次选了座位2之后，继续点find seat，此时如果选择座位4，那么，会看到作为2和4都呈现被选中的状态。
+                有了这个function，选择座位4之后，座位2会回到initSeats function初始化座位所呈现的状态*/
+            }
+            for (var i = 0; i < seats.length; i++) {
+                if (seats[i] && seats[i + 1] && seats[i + 2] == true) {
+                    /*boolean逻辑运算符：只用在boolean数据上，即只与true/false合用,比如：&&，||，！
+                    boolean比较运算符则是先比较两个值，然后产生boolean结果，比如：！=， >=.
+                    这里利用boolean逻辑运算，检查连续的三张椅子是否都为空。
+                    我们也可以利用嵌套的if语句实现：if (seats[i] == true) {
+                                                     if (seats[i+1] == true) {
+                                                        if (seats[i+2] == true) {
+
+                                                        }
+                                                    }
+                                                }*/
+
+                    document.getElementById("seats" + i).src = "images/seat_select.png"
+                    document.getElementById("seats" + i).alt = "YOur seat"
+                    document.getElementById("seats" + (i + 1)).src = "images/seat_select.png"
+                    document.getElementById("seats" + (i + 1)).alt = "YOur seat"
+                    document.getElementById("seats" + (i + 2)).src = "images/seat_select.png"
+                    document.getElementById("seats" + (i + 2)).alt = "YOur seat"
+                    var accept = confirm("Seat " + (i + 1) + " through " + (i + 3) + " are available. Accept?")
+                        /* A confirm box is often used if you want the user to verify or accept something.
+                        When a confirm box pops up, the user will have to click either "OK" or "Cancel" to proceed.
+                        If the user clicks "OK", the box returns true. If the user clicks "Cancel", the box returns false.*/
+                    if (!accept) {
+
+                        document.getElementById("seats" + i).src = "images/seat_avail.png"
+                        document.getElementById("seats" + i).alt = "Seat available"
+                        document.getElementById("seats" + (i + 1)).src = "images/seat_avail.png"
+                        document.getElementById("seats" + (i + 1)).alt = "Seat available"
+                        document.getElementById("seats" + (i + 2)).src = "images/seat_avail.png"
+                        document.getElementById("seats" + (i + 2)).alt = "Seat available"
+                    } else {
+                        selSeat = i; /*同意座位之后，把selSeat设置为i，是为了下一次onclick的时候，能够运行initSeats function，*/
+                        break;
+                        /*break专门为结束一段代码而设计，可以立刻跳出循环，无视判定条件，这轮循环其后的代码也不会执行。
+                        break作用：当用户同意这个座位，则跳出for循环，不然会一直提示哪些座位是空的直到i>seats.length。
+                        也可以使用改变判定数字i的方法，比如：i = seats.length + 1，此时即会判定为false跳出循环*/
+                        /*与break相似的有continue语句，但是continue是跳出当前这一轮循环，但不会完全脱离循环，而是强迫进入下一个循环，*/
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+
+<body onload="initSeats()">
+    <div style="text-align:center; margin-top: 100px">
+        <img id="seats0" src=" " alt=" " />
+        <img id="seats1" src=" " alt=" " />
+        <img id="seats2" src=" " alt=" " />
+        <img id="seats3" src=" " alt=" " />
+        <img id="seats4" src=" " alt=" " />
+        <img id="seats5" src=" " alt=" " />
+        <img id="seats6" src=" " alt=" " />
+        <img id="seats7" src=" " alt=" " />
+        <img id="seats8" src=" " alt=" " /><br/>
+        <input type="button" value="Find Seat" onclick="findSeat()" />
+    </div>
+</body>
+
+</html>
